@@ -1,2 +1,0 @@
-# forum
-Forum gruppeprosjekt

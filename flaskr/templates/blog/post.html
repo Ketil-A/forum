@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='comments.js') }}"></script>
+  <script>
+    $( document ).ready(function(){
+      commentSetup();
+    });
+  </script>
+  <script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+{% endblock %}
+
+{% block content %}
+    <article class="post">
+      <header>
+        <div>
+          <h1>{{ post['title'] }}</h1>
+          <div class="about">by {{ post['username'] }} on {{ post['created'].strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% if g.user['id'] == post['author_id'] %}
+          <a class="action" href="{{ url_for('blog.update', id=post['id']) }}">Edit</a>
+        {% endif %}
+      </header>
+      <p class="body">{{ post['body'] }}</p>
+    </article>
+    <div>
+      <textarea class="commentTextArea" id="newCommentText"></textarea>
+      <button class="action createComment" id="createComment" data-postid= "{{ post['id'] }}">Submit Comment</button>
+    </div>
+    {% for comment in comments %}
+    <article class="post comment">
+      <header>
+        <div>
+          <div class="commentAbout">Comment by {{ comment['username'] }} on {{ comment['created'].strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% if g.user['id'] == comment['author_id'] %}
+          <button class="action editcomment" id="commentEdit{{ comment['id'] }}" data-id= "{{ comment['id'] }}">Edit</button>
+          <button class="action submitComment" id="commentSubmit{{ comment['id'] }}" data-id= "{{ comment['id'] }}" style="display:none;" >Update</button>
+          <button class="action deleteComment" id="commentDelete{{ comment['id'] }}" data-id= "{{ comment['id'] }}">Delete</button>
+        {% endif %}
+      </header>
+      <div class="commentDiv" id="comment{{ comment['id'] }}">{{ comment['body'] }}</div>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}
