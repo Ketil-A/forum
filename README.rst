@@ -28,7 +28,7 @@ Or on Windows cmd::
 
 Install Flaskr:
 
-    pip install -e 
+    pip install -e .
 
 Set the FLASK_APP variable:
 
