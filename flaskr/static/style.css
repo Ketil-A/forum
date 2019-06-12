@@ -7,17 +7,18 @@ html {
 body {
   max-width: 960px;
   margin: 0 auto;
-  background: white;
+  background: #ddd;
+  border-radius: 20px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: serif;
-  color: #377ba8;
+  font-family: sans-serif;
+  color: #000;
   margin: 1rem 0;
 }
 
 a {
-  color: #377ba8;
+  color: #fff;
 }
 
 hr {
@@ -26,10 +27,12 @@ hr {
 }
 
 nav {
-  background: lightgray;
+  background: #aaa;
   display: flex;
   align-items: center;
   padding: 0 0.5rem;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
 }
 
 nav h1 {
@@ -52,6 +55,7 @@ nav ul  {
 nav ul li a, nav ul li span, header .action {
   display: block;
   padding: 0.5rem;
+  decoration: none;
 }
 
 .content {
@@ -117,6 +121,10 @@ nav ul li a, nav ul li span, header .action {
 
 .content input, .content textarea {
   margin-bottom: 1em;
+  padding: 5px;
+  border-radius: 15px;
+  border-style: solid;
+  border-width: 0px;
 }
 
 .content textarea {
@@ -131,7 +139,13 @@ input.danger {
 input[type=submit] {
   align-self: start;
   min-width: 10em;
+  border-radius: 15px;
+  color: white;
+  background-color: #555;
+  border-style: solid;
+  padding: 4px;
 }
+
 .commentDiv {
   white-space: pre-line; 
   border-style: solid;
