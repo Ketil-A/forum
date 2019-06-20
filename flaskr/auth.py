@@ -47,13 +47,14 @@ def register():
         username = request.form['username']
         password = request.form['password']
         db = get_db()
+        c = db.cursor()
         error = None
 
         if not username:
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
-        elif db.execute(
+        elif c.execute(
             'SELECT id FROM user WHERE username = ?', (username,)
         ).fetchone() is not None:
             error = 'User {0} is already registered.'.format(username)
@@ -61,9 +62,14 @@ def register():
         if error is None:
             # the name is available, store it in the database and go to
             # the login page
-            db.execute(
+            c.execute(
                 'INSERT INTO user (username, password) VALUES (?, ?)',
                 (username, generate_password_hash(password))
+            )
+            user_id = c.lastrowid
+            c.execute(
+                'INSERT INTO profile (user_id) VALUES (?)',
+                (user_id,)
             )
             db.commit()
             return redirect(url_for('auth.login'))

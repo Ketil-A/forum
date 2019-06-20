@@ -2,6 +2,7 @@
 -- Drop any existing data and create empty tables.
 
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS profile;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS comment;
 
@@ -10,6 +11,16 @@ CREATE TABLE user (
   username TEXT UNIQUE NOT NULL,
   password TEXT NOT NULL
 );
+
+CREATE TABLE profile (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER UNIQUE NOT NULL,
+  firstname TEXT,
+  lastname TEXT,
+  bio TEXT,
+  FOREIGN KEY (user_id) REFERENCES user (id)
+);
+
 
 CREATE TABLE post (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
