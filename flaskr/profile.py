@@ -21,7 +21,7 @@ def get_profile(id): #TODO profile image?
 
 def get_user(username):
     user = get_db().execute(
-        'SELECT u.id, username'
+        'SELECT u.id, username, email'
         ' FROM user u'
         ' WHERE u.username = ?',
         (username,)

@@ -46,6 +46,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email'] #TODO verify that its a valid email
         db = get_db()
         c = db.cursor()
         error = None
@@ -63,8 +64,8 @@ def register():
             # the name is available, store it in the database and go to
             # the login page
             c.execute(
-                'INSERT INTO user (username, password) VALUES (?, ?)',
-                (username, generate_password_hash(password))
+                'INSERT INTO user (username, password, email) VALUES (?, ?, ?)',
+                (username, generate_password_hash(password), email)
             )
             user_id = c.lastrowid
             c.execute(
