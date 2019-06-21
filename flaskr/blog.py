@@ -25,7 +25,17 @@ def index():
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts, tags = "PLACEHOLDER LIST OF TAGS")
+    tags = {}
+    for p in posts:
+        p_id = p['id']
+        tags[p_id] = db.execute(
+            'SELECT tag_text'
+            ' FROM tags'
+            ' WHERE post_id = ?'
+            ' ORDER BY tag_text DESC',
+            (p_id,)
+        ).fetchall()
+    return render_template('blog/index.html', posts=posts, tags = tags)
 
 
 def get_post(id, check_author=True):
@@ -97,6 +107,15 @@ def create():
 
     return render_template('blog/create.html')
 
+#TODO: write a single tag filter for posts
+@bp.route('/<string:tag>/bytag', methods=('GET', 'POST'))
+def bytag(tag):
+    return ("<p>Nothing to see here. Move along.</p>"
+            "<p>By that I mean, this part of the site is not done yet.</p>"
+            "<p>As in, press the back button, else you're stuck here.</p>"
+            "<p>Uh, you wonder what this is?</p>"
+            "<p>Just a link to get all posts by tag, that's all</p>"
+            "<p>we good? ok. NOW SCRAM!</p>")
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
@@ -159,7 +178,7 @@ def view_post(id):
         'SELECT tag_text'
         ' FROM tags'
         ' WHERE post_id = ?'
-        ' ORDER BY created DESC',
+        ' ORDER BY tag_text DESC',
         (id,)
     ).fetchall()
     return render_template('blog/post.html', post=post, tags = tags, comments=comments)
