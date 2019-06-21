@@ -1,4 +1,5 @@
 import functools
+import re
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -46,7 +47,7 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        email = request.form['email'] #TODO verify that its a valid email
+        email = request.form['email'] #TODO? (Nice to have) send confirmation email
         db = get_db()
         c = db.cursor()
         error = None
@@ -55,6 +56,10 @@ def register():
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
+        elif not email:
+            error = 'Password is required.'
+        elif not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            error = 'Invalid email.'
         elif c.execute(
             'SELECT id FROM user WHERE username = ?', (username,)
         ).fetchone() is not None:
