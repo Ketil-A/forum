@@ -25,6 +25,7 @@
         {% endif %}
       </header>
       <p class="body">{{ post['body'] }}</p>
+      <p class="about">Tags: {% for tag in tags %} {{tag['tag_text']}} {% endfor %}</p>
     </article>
     <div>
       <textarea class="commentTextArea" id="newCommentText"></textarea>

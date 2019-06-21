@@ -8,6 +8,9 @@ from flaskr.db import get_db
 
 bp = Blueprint('blog', __name__)
 
+#global flag for printing some debugging data
+# - Lars Erik 'KvaGram' Grambo
+__TEST__ = True
 
 @bp.route('/ascii')
 def ascii():
@@ -22,7 +25,7 @@ def index():
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+    return render_template('blog/index.html', posts=posts, tags = "PLACEHOLDER LIST OF TAGS")
 
 
 def get_post(id, check_author=True):
@@ -58,8 +61,13 @@ def get_post(id, check_author=True):
 def create():
     """Create a new post for the current user."""
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+        title:str = request.form['title']
+        body:str = request.form['body']
+        tags:str = request.form['tags']
+        #splits tags by space, and uppercase them
+        taglist:list = tags.upper().split(" ")
+        #filter out duplicate tags
+        taglist:list = list(set(taglist))
         error = None
 
         if not title:
@@ -69,11 +77,21 @@ def create():
             flash(error)
         else:
             db = get_db()
-            db.execute(
+            res = db.execute(
                 'INSERT INTO post (title, body, author_id)'
                 ' VALUES (?, ?, ?)',
                 (title, body, g.user['id'])
             )
+            postID = res.lastrowid
+            for t in taglist:
+                res = db.execute(
+                    'INSERT INTO tags (post_id, tag_text)'
+                    ' VALUES (?, ?)',
+                    (postID, t)
+                )
+                if __TEST__:
+                    print("Tagentry {tagID} - Added tag {tag} for postid {postID}"
+                        .format(tagID = res.lastrowid, tag = t, postID = postID))
             db.commit()
             return redirect(url_for('blog.index'))
 
@@ -105,7 +123,7 @@ def update(id):
             db.commit()
             return redirect(url_for('blog.index'))
 
-    return render_template('blog/update.html', post=post)
+    return render_template('blog/update.html', post=post, tags = "PLACEHOLDER LIST OF TAGS")
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
@@ -119,6 +137,8 @@ def delete(id):
     get_post(id)
     db = get_db()
     db.execute('DELETE FROM post WHERE id = ?', (id,))
+    #TODO: delete tag entries. like this
+    # psudocode: delete from tags where post_id = ? (id)
     db.commit()
     return redirect(url_for('blog.index'))
 
@@ -135,7 +155,14 @@ def view_post(id):
         ' ORDER BY created DESC',
         (id,)
     ).fetchall()
-    return render_template('blog/post.html', post=post, comments=comments)
+    tags = db.execute(
+        'SELECT tag_text'
+        ' FROM tags'
+        ' WHERE post_id = ?'
+        ' ORDER BY created DESC',
+        (id,)
+    ).fetchall()
+    return render_template('blog/post.html', post=post, tags = tags, comments=comments)
 
 ##By ketil
 @bp.route('/ajax/comment/<int:postid>/create', methods=['POST'])
