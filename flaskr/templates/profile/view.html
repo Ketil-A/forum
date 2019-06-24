@@ -13,15 +13,15 @@
     </header>
     {% if g.user['id'] == user['id'] %}
     <div>
-      Email(hidden): {{ user['email']}}
+      Email(only visible to you): {{ user['email']}}
     </div>
     {% endif %}
     <div>
-      Name: {{ profile['firstname']}} {{ profile['lastname']}}
+      Name: {{profile['firstname'] if profile['firstname'] != none}} {{profile['lastname'] if profile['lastname'] != none}}
     </div>
     <div>
       About me:
-      <pre>{{ profile['bio']}}</pre>
+      <pre>{{ profile['bio'] if profile['bio'] != none}}</pre>
     </div>
     {% if g.user['id'] == user['id'] %}
     <a class="action" href="{{ url_for('profile.editProfile', username=user['username']) }}">Edit</a>
