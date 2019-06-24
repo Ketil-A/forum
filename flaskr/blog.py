@@ -114,15 +114,24 @@ def create():
 
     return render_template('blog/create.html')
 
-#TODO: write a single tag filter for posts
+# Displays all posts with given tag
 @bp.route('/<string:tag>/bytag', methods=('GET', 'POST'))
 def bytag(tag):
-    return ("<p>Nothing to see here. Move along.</p>"
-            "<p>By that I mean, this part of the site is not done yet.</p>"
-            "<p>As in, press the back button, else you're stuck here.</p>"
-            "<p>Uh, you wonder what this is?</p>"
-            "<p>Just a link to get all posts by tag, that's all</p>"
-            "<p>we good? ok. NOW SCRAM!</p>")
+    db = get_db()
+    posts = []
+    posttags = []
+    taghits = db.execute(
+        'SELECT post_id'
+        ' FROM tags'
+        ' WHERE tag_text = ?'
+        ' ORDER BY post_id DESC',
+        (tag,)
+    ).fetchall()
+    for h in taghits:
+        postID = h['post_id']
+        posts.append(get_post(postID, False))
+        posttags.append(get_tags(postID))
+    return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
