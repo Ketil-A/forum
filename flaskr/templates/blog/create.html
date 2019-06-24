@@ -11,7 +11,7 @@
     <label for="body">Body</label>
     <textarea name="body" id="body">{{ request.form['body'] }}</textarea>
     <label for="tags">tags</label>
-    <input name="tags" id="tags" value="{{ request.form['tags'] }}" required>
+    <input name="tags" id="tags" value="{{ request.form['tags'] }}">
     <input type="submit" value="Save">
   </form>
 {% endblock %}
