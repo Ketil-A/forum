@@ -1,5 +1,5 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for
+    Blueprint, flash, g, redirect, render_template, request, url_for, Markup
 )
 from werkzeug.exceptions import abort
 
@@ -85,6 +85,9 @@ def create():
         #split uppercase and split tags into a set.
         #this ensures same case and no duplicates
         taglist:set = set(tags.upper().split(" "))
+        tagErr = checkTags(tags)
+        if tagErr:
+            error = tagErr
         error = None
 
         if not title:
@@ -119,7 +122,7 @@ def create():
 def bytag(tag):
     db = get_db()
     posts = []
-    posttags = []
+    posttags = {}
     taghits = db.execute(
         'SELECT post_id'
         ' FROM tags'
@@ -130,7 +133,7 @@ def bytag(tag):
     for h in taghits:
         postID = h['post_id']
         posts.append(get_post(postID, False))
-        posttags.append(get_tags(postID))
+        posttags[postID] = getTagtext(postID = postID, links = True, tagCase = TagCase.CAPITAL)
 #    for p in posts:
 #        p_id = p['id']
 #        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
@@ -151,6 +154,10 @@ def update(id):
         body = request.form['body']
         newtags = request.form['tags']
         error = None
+
+        tagErr = checkTags(tags)
+        if tagErr:
+            error = tagErr
 
         if not title:
             error = 'Title is required.'
@@ -223,7 +230,7 @@ def view_post(id):
         ' ORDER BY created DESC',
         (id,)
     ).fetchall()
-    tags = get_tags(id)
+    tags = getTagtext(postID = id, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/post.html', post=post, tags = tags, comments=comments)
 
 ##By ketil
@@ -324,13 +331,28 @@ def getTagtext(**kwargs):
             pass #TODO add applicable colors to tags (may require some lookup table or database)
         if addLinks:
             url = url_for('blog.bytag', tag = tt)
-            text = "<a href ='" + url + "'>" + text + "</a>"
+            text = Markup("<a href ='" + url + "'>" + text + "</a>")
         tagtextlist.append(text)
     if sortmode == TagSort.ALPHABETIC:
         pass #TODO: add sorting
     return " ".join(tagtextlist)
 
-    
+def checkTags(tags:str):
+    """
+    Checktags checks if there are any issues with one of the tags.
+    This could be a bad length or some html exploit.
+    Returns: a string explaining the problem or False
+    """
+    #TODO: write some checks for tags
+    taglist = tags.upper.split(" ")
+    for t in taglist:
+        #let's forget about Little Boddy Tables for now...
+        #Let's worry about him later ;-- drop table Code
+        valid = True
+        if not valid:
+            return "The tag '{0}' was rejected!".format(t)
+    return False #No problems found
+
 #enum for TagSort
 class TagSort:
     NONE = 0 # keep tags as is from database
