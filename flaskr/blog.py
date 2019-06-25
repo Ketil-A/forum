@@ -8,6 +8,9 @@ from flaskr.db import get_db
 
 bp = Blueprint('blog', __name__)
 
+#global flag for printing some debugging data
+# - Lars Erik 'KvaGram' Grambo
+__TEST__ = True
 
 @bp.route('/ascii')
 def ascii():
@@ -22,7 +25,11 @@ def index():
         ' FROM post p JOIN user u ON p.author_id = u.id'
         ' ORDER BY created DESC'
     ).fetchall()
-    return render_template('blog/index.html', posts=posts)
+    tags = {}
+    for p in posts:
+        p_id = p['id']
+        tags[p_id] = get_tags(p_id)
+    return render_template('blog/index.html', posts=posts, tags = tags)
 
 
 def get_post(id, check_author=True):
@@ -51,6 +58,20 @@ def get_post(id, check_author=True):
         abort(403)
 
     return post
+def get_tags(postID:int):
+    """Gets list of tags associated with a post, by postID.
+
+    :param postID: id of the post tag-list to get
+    :return: a list of tags for this post
+    """
+    post = get_db().execute(
+        'SELECT tag_text'
+        ' FROM tags'
+        ' WHERE post_id = ?'
+        ' ORDER BY tag_text DESC',
+        (postID,)
+    ).fetchall()
+    return post
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -58,8 +79,12 @@ def get_post(id, check_author=True):
 def create():
     """Create a new post for the current user."""
     if request.method == 'POST':
-        title = request.form['title']
-        body = request.form['body']
+        title:str = request.form['title']
+        body:str = request.form['body']
+        tags:str = request.form['tags']
+        #split uppercase and split tags into a set.
+        #this ensures same case and no duplicates
+        taglist:set = set(tags.upper().split(" "))
         error = None
 
         if not title:
@@ -69,26 +94,59 @@ def create():
             flash(error)
         else:
             db = get_db()
-            db.execute(
+            res = db.execute(
                 'INSERT INTO post (title, body, author_id)'
                 ' VALUES (?, ?, ?)',
                 (title, body, g.user['id'])
             )
+            postID = res.lastrowid
+            for t in taglist:
+                res = db.execute(
+                    'INSERT INTO tags (post_id, tag_text)'
+                    ' VALUES (?, ?)',
+                    (postID, t)
+                )
+                if __TEST__:
+                    print("Tagentry {tagID} - Added tag {tag} for postid {postID}"
+                        .format(tagID = res.lastrowid, tag = t, postID = postID))
             db.commit()
             return redirect(url_for('blog.index'))
 
     return render_template('blog/create.html')
 
+# Displays all posts with given tag
+@bp.route('/<string:tag>/bytag', methods=('GET', 'POST'))
+def bytag(tag):
+    db = get_db()
+    posts = []
+    posttags = {}
+    taghits = db.execute(
+        'SELECT post_id'
+        ' FROM tags'
+        ' WHERE tag_text = ?'
+        ' ORDER BY post_id DESC',
+        (tag,)
+    ).fetchall()
+    for h in taghits:
+        postID = h['post_id']
+        posts.append(get_post(postID, False))
+        posttags[postID] = (get_tags(postID))
+    return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
 @login_required
 def update(id):
     """Update a post if the current user is the author."""
     post = get_post(id)
+    tags = get_tags(id)
+    tags_str = ""
+    for t in tags:
+        tags_str += t['tag_text'] + " "
 
     if request.method == 'POST':
         title = request.form['title']
         body = request.form['body']
+        newtags = request.form['tags']
         error = None
 
         if not title:
@@ -103,10 +161,36 @@ def update(id):
                 (title, body, id)
             )
             db.commit()
+            update_tags(id, tags, newtags)
             return redirect(url_for('blog.index'))
 
-    return render_template('blog/update.html', post=post)
+    return render_template('blog/update.html', post=post, tags = tags_str)
+    
+def update_tags(postID:int, oldtags:list, newtags:str):
+    oldtaglist = set()
+    for t in oldtags:
+        oldtaglist.add(t['tag_text'])
+    newtaglist = set(newtags.upper().split(" "))
 
+    tags_to_add = newtaglist - oldtaglist
+    tags_to_del = oldtaglist - newtaglist
+
+    db = get_db()
+    for t in tags_to_add:
+        res = db.execute(
+            'INSERT INTO tags (post_id, tag_text)'
+            ' VALUES (?, ?)',
+            (postID, t)
+        )
+        if __TEST__:
+            print("Tagentry {tagID} - Added tag {tag} for postid {postID}"
+                .format(tagID = res.lastrowid, tag = t, postID = postID))
+    for t in tags_to_del:
+        db.execute('DELETE FROM tags WHERE post_id = ? and tag_text = ?', (postID,t))
+        if __TEST__:
+            print("Removed tag {tag} from postid {postID}"
+                .format(tag = t, postID = postID))
+    db.commit()
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
@@ -119,6 +203,7 @@ def delete(id):
     get_post(id)
     db = get_db()
     db.execute('DELETE FROM post WHERE id = ?', (id,))
+    db.execute('DELETE FROM tags WHERE post_id = ?',(id,))
     db.commit()
     return redirect(url_for('blog.index'))
 
@@ -135,7 +220,8 @@ def view_post(id):
         ' ORDER BY created DESC',
         (id,)
     ).fetchall()
-    return render_template('blog/post.html', post=post, comments=comments)
+    tags = get_tags(id)
+    return render_template('blog/post.html', post=post, tags = tags, comments=comments)
 
 ##By ketil
 @bp.route('/ajax/comment/<int:postid>/create', methods=['POST'])
