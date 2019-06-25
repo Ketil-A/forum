@@ -119,7 +119,7 @@ def create():
 def bytag(tag):
     db = get_db()
     posts = []
-    posttags = []
+    posttags = {}
     taghits = db.execute(
         'SELECT post_id'
         ' FROM tags'
@@ -130,7 +130,7 @@ def bytag(tag):
     for h in taghits:
         postID = h['post_id']
         posts.append(get_post(postID, False))
-        posttags.append(get_tags(postID))
+        posttags[postID] = (get_tags(postID))
     return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
