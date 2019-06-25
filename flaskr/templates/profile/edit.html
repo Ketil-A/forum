@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Edit Profile{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="firstname">First Name</label>
+    <input name="firstname" id="firstname" placeholder="First name" value={{profile['firstname'] if profile['firstname'] != none}}>
+    <label for="lastname">Last Name</label>
+    <input name="lastname" id="lastname" placeholder="Last name" value={{profile['lastname'] if profile['lastname'] != none}}>
+    <label for="bio">About me</label>
+    <textarea name="bio" id="bio" >{{profile['bio'] if profile['bio'] != none}}</textarea>
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}
