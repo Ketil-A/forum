@@ -1,4 +1,5 @@
 import functools
+import re
 
 from flask import (
     Blueprint, flash, g, redirect, render_template, request, session, url_for
@@ -46,14 +47,20 @@ def register():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        email = request.form['email'] #TODO? (Nice to have) send confirmation email
         db = get_db()
+        c = db.cursor()
         error = None
 
         if not username:
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
-        elif db.execute(
+        elif not email:
+            error = 'Password is required.'
+        elif not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            error = 'Invalid email.'
+        elif c.execute(
             'SELECT id FROM user WHERE username = ?', (username,)
         ).fetchone() is not None:
             error = 'User {0} is already registered.'.format(username)
@@ -61,9 +68,14 @@ def register():
         if error is None:
             # the name is available, store it in the database and go to
             # the login page
-            db.execute(
-                'INSERT INTO user (username, password) VALUES (?, ?)',
-                (username, generate_password_hash(password))
+            c.execute(
+                'INSERT INTO user (username, password, email) VALUES (?, ?, ?)',
+                (username, generate_password_hash(password), email)
+            )
+            user_id = c.lastrowid
+            c.execute(
+                'INSERT INTO profile (user_id) VALUES (?)',
+                (user_id,)
             )
             db.commit()
             return redirect(url_for('auth.login'))
