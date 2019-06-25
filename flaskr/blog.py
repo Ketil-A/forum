@@ -28,7 +28,7 @@ def index():
     tags = {}
     for p in posts:
         p_id = p['id']
-        tags[p_id] = get_tags(p_id)
+        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = tags)
 
 
@@ -131,6 +131,9 @@ def bytag(tag):
         postID = h['post_id']
         posts.append(get_post(postID, False))
         posttags.append(get_tags(postID))
+#    for p in posts:
+#        p_id = p['id']
+#        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
@@ -280,3 +283,59 @@ def delete_comment(id):
     db.execute('DELETE FROM comment WHERE id = ?', (id,))
     db.commit()
     return "Deleted Comment"
+
+def getTagtext(**kwargs):
+    """
+    postID or tagResults required.
+    If postID is given, gets tagResults from get_tags()
+    :param postID: id of post to get comment string
+    :param tagResults : tags to convert to string.
+    :param tagCase : The displayed typecase of the tags
+    :param number: add number of post with tag
+    :param colorize: add color-data to tags
+    :param links : add links for bytag page
+    :param sort: sorting-mode, see TagSort enum
+    :return: a string containing the tags.
+    """
+    postID      = kwargs.get("postID", None)
+    tagResults  = kwargs.get("tagResults", None)
+    tagCase     = kwargs.get("tagCase", TagCase.UPPER)
+    addNums     = kwargs.get("number", False)
+    addColors   = kwargs.get("colorize", False)
+    addLinks    = kwargs.get("links", False)
+    sortmode    = kwargs.get("sort", TagSort.NONE)
+
+    if not tagResults:
+        tagResults = get_tags(postID)
+    if not tagResults or len(tagResults) < 1:
+        return ""
+
+    tagtextlist = []
+    for t in tagResults:
+        tt = t['tag_text']
+        text = tt
+        if tagCase == TagCase.LOWER:
+            text = text.lower()
+        elif tagCase == TagCase.CAPITAL:
+            text = text.capitalize()
+        if addNums:
+            pass #TODO add numbers to tag
+        if addColors:
+            pass #TODO add applicable colors to tags (may require some lookup table or database)
+        if addLinks:
+            url = url_for('blog.bytag', tag = tt)
+            text = "<a href ='" + url + "'>" + text + "</a>"
+        tagtextlist.append(text)
+    if sortmode == TagSort.ALPHABETIC:
+        pass #TODO: add sorting
+    return " ".join(tagtextlist)
+
+    
+#enum for TagSort
+class TagSort:
+    NONE = 0 # keep tags as is from database
+    ALPHABETIC = 1 # sort tags alphabetically - (current sql query in get_tags?)
+class TagCase:
+    UPPER = 0
+    LOWER = 1
+    CAPITAL = 2
