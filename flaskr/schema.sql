@@ -43,7 +43,7 @@ CREATE TABLE comment (
   FOREIGN KEY (author_id) REFERENCES user (id),
   FOREIGN KEY (post_id) REFERENCES post (id)
 );
--- Added by Lars Erik & Ketil
+-- Added by Lars Erik & Olav
 CREATE TABLE tags (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   post_id INTEGER NOT NULL,
