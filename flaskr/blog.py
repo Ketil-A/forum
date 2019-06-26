@@ -1,10 +1,12 @@
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, url_for, Markup
+    Blueprint, flash, g, redirect, render_template, request, url_for
 )
 from werkzeug.exceptions import abort
 
 from flaskr.auth import login_required
 from flaskr.db import get_db
+
+import html
 
 bp = Blueprint('blog', __name__)
 
@@ -339,7 +341,9 @@ def getTagtext(**kwargs):
             pass #TODO add applicable colors to tags (may require some lookup table or database)
         if addLinks:
             url = url_for('blog.bytag', tag = tt)
-            text = Markup("<a href ='" + url + "'>" + text + "</a>")
+            text = "<a href ='" + url + "'>" + html.escape(text) + "</a>"
+        else: 
+            text = html.escape(text)
         tagtextlist.append(text)
     if sortmode == TagSort.ALPHABETIC:
         pass #TODO: add sorting
@@ -374,6 +378,8 @@ def checkTags(tags:str):
             return f"Woah! Is '{t}' even a word? It seems a bit short. Try lengthen it to at least {__MIN_TAGLENGTH__} characters"
         elif len(t) > __MAX_TAGLENGTH__:
             return f"Excuse me! This field is not meant to write novels in. Try shortening that long tag there to just {__MAX_TAGLENGTH__} characters"
+        elif not t.isalnum():
+            return "Tags can only have alphanumeric characters"
         #let's forget about Little Boddy Tables for now...
         #Let's worry about him later ;-- drop table Code
         if False:
