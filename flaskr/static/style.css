@@ -169,3 +169,7 @@ button *{
 .commentTextArea {
   width:100%
 }
+asciiart {
+  font-family: monospace;
+  font-size: 4px;
+}
