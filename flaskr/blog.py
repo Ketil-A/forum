@@ -91,6 +91,7 @@ def create():
         #split uppercase and split tags into a set.
         #this ensures same case and no duplicates
         taglist:set = set(tags.upper().split(" "))
+        taglist.remove("") #remove empty string tag
         error = None
 
         tagErr = checkTags(tags)
@@ -156,9 +157,12 @@ def update(id):
         title = request.form['title']
         body = request.form['body']
         newtags = request.form['tags']
+
+        newtaglist:set = set(newtags.upper().split(" "))
+        newtaglist.remove("") #remove empty string tag
         error = None
 
-        tagErr = checkTags(newtags)
+        tagErr = checkTags(newtaglist)
         if tagErr:
             error = tagErr
 
@@ -368,8 +372,8 @@ def checkTags(tags):
     Returns: a string explaining the problem or False
     """
     #TODO: write some technical checks for tags
-    if type(tags) in (list,):
-        taglist = tags
+    if type(tags) in (list,tuple,set):
+        taglist = list(tags)
     elif type(tags) in (str,):
         taglist = tags.upper().split(" ")
     if len(taglist) < __MIN_TAGS__:
