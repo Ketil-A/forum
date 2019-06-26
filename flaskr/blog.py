@@ -158,7 +158,7 @@ def update(id):
         newtags = request.form['tags']
         error = None
 
-        tagErr = checkTags(tags)
+        tagErr = checkTags(newtags)
         if tagErr:
             error = tagErr
 
@@ -361,14 +361,17 @@ def shortenLongInt(num:int):
     return f"{num}{suff[mag]}"
 
 
-def checkTags(tags:str):
+def checkTags(tags):
     """
     Checktags checks if there are any issues with one of the tags.
     This could be a bad length or some html exploit.
     Returns: a string explaining the problem or False
     """
     #TODO: write some technical checks for tags
-    taglist = tags.upper().split(" ")
+    if type(tags) in (list,):
+        taglist = tags
+    elif type(tags) in (str,):
+        taglist = tags.upper().split(" ")
     if len(taglist) < __MIN_TAGS__:
         return f"Woah! We know almost nothing about this post. A post needs to have {__MIN_TAGS__} tags at least!"
     elif len(taglist) > __MAX_TAGS__:
