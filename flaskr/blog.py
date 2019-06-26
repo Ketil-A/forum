@@ -89,11 +89,11 @@ def create():
         #split uppercase and split tags into a set.
         #this ensures same case and no duplicates
         taglist:set = set(tags.upper().split(" "))
+        error = None
+        
         tagErr = checkTags(tags)
         if tagErr:
             error = tagErr
-        error = None
-
         if not title:
             error = 'Title is required.'
 
@@ -367,7 +367,7 @@ def checkTags(tags:str):
     Returns: a string explaining the problem or False
     """
     #TODO: write some technical checks for tags
-    taglist = tags.upper.split(" ")
+    taglist = tags.upper().split(" ")
     if len(taglist) < __MIN_TAGS__:
         return f"Woah! We know almost nothing about this post. A post needs to have {__MIN_TAGS__} tags at least!"
     elif len(taglist) > __MAX_TAGS__:
