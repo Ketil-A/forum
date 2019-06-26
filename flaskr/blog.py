@@ -90,7 +90,7 @@ def create():
         #this ensures same case and no duplicates
         taglist:set = set(tags.upper().split(" "))
         error = None
-        
+
         tagErr = checkTags(tags)
         if tagErr:
             error = tagErr
@@ -138,9 +138,6 @@ def bytag(tag):
         postID = h['post_id']
         posts.append(get_post(postID, False))
         posttags[postID] = getTagtext(postID = postID, number = True, links = True, tagCase = TagCase.CAPITAL)
-#    for p in posts:
-#        p_id = p['id']
-#        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))

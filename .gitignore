@@ -5,6 +5,7 @@ instance/
 .cache/
 .pytest_cache/
 .vscode/
+.vs/
 .coverage
 htmlcov/
 dist/

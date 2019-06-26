@@ -9,7 +9,7 @@ def test_register(client, app):
 
     # test that successful registration redirects to the login page
     response = client.post(
-        '/auth/register', data={'username': 'a', 'password': 'a'}
+        '/auth/register', data={'username': 'a', 'password': 'a', 'email': 'a@a.a'}
     )
     assert 'http://localhost/auth/login' == response.headers['Location']
 
@@ -20,15 +20,15 @@ def test_register(client, app):
         ).fetchone() is not None
 
 
-@pytest.mark.parametrize(('username', 'password', 'message'), (
-    ('', '', b'Username is required.'),
-    ('a', '', b'Password is required.'),
-    ('test', 'test', b'already registered'),
+@pytest.mark.parametrize(('username', 'password','email', 'message'), (
+    ('','','', b'Username is required.'),
+    ('a','','', b'Password is required.'),
+    ('test', 'test', 'test@test.no', b'already registered'),
 ))
-def test_register_validate_input(client, username, password, message):
+def test_register_validate_input(client, username, password, email, message):
     response = client.post(
         '/auth/register',
-        data={'username': username, 'password': password}
+        data={'username': username, 'password': password, 'email': email}
     )
     assert message in response.data
 

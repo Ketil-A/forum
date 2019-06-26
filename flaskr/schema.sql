@@ -2,15 +2,27 @@
 -- Drop any existing data and create empty tables.
 
 DROP TABLE IF EXISTS user;
+DROP TABLE IF EXISTS profile;
 DROP TABLE IF EXISTS post;
 DROP TABLE IF EXISTS comment;
-DROP TABLE IF EXISTS tag;
+DROP TABLE IF EXISTS tags;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   username TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL
+  password TEXT NOT NULL,
+  email TEXT NOT NULL
 );
+
+CREATE TABLE profile (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER UNIQUE NOT NULL,
+  firstname TEXT,
+  lastname TEXT,
+  bio TEXT,
+  FOREIGN KEY (user_id) REFERENCES user (id)
+);
+
 
 CREATE TABLE post (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,7 +43,7 @@ CREATE TABLE comment (
   FOREIGN KEY (author_id) REFERENCES user (id),
   FOREIGN KEY (post_id) REFERENCES post (id)
 );
--- Added by Lars Erik & Ketil
+-- Added by Lars Erik & Olav
 CREATE TABLE tags (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   post_id INTEGER NOT NULL,
