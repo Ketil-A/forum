@@ -28,7 +28,7 @@ def index():
     tags = {}
     for p in posts:
         p_id = p['id']
-        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
+        tags[p_id] = getTagtext(postID = p_id, number = True, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = tags)
 
 
@@ -133,7 +133,7 @@ def bytag(tag):
     for h in taghits:
         postID = h['post_id']
         posts.append(get_post(postID, False))
-        posttags[postID] = getTagtext(postID = postID, links = True, tagCase = TagCase.CAPITAL)
+        posttags[postID] = getTagtext(postID = postID, number = True, links = True, tagCase = TagCase.CAPITAL)
 #    for p in posts:
 #        p_id = p['id']
 #        tags[p_id] = getTagtext(postID = p_id, links = True, tagCase = TagCase.CAPITAL)
@@ -230,7 +230,7 @@ def view_post(id):
         ' ORDER BY created DESC',
         (id,)
     ).fetchall()
-    tags = getTagtext(postID = id, links = True, tagCase = TagCase.CAPITAL)
+    tags = getTagtext(postID = id, number = True, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/post.html', post=post, tags = tags, comments=comments)
 
 ##By ketil
@@ -326,7 +326,14 @@ def getTagtext(**kwargs):
         elif tagCase == TagCase.CAPITAL:
             text = text.capitalize()
         if addNums:
-            pass #TODO add numbers to tag
+            length = len(get_db().execute(
+                'SELECT post_id'
+                ' FROM tags'
+                ' WHERE tag_text = ?',
+                (tt,)
+            ).fetchall()) #NOTE: There must be a better way to do this.
+            lentext = shortenLongInt(length)
+            text = f"{text} ({lentext})"
         if addColors:
             pass #TODO add applicable colors to tags (may require some lookup table or database)
         if addLinks:
@@ -336,6 +343,18 @@ def getTagtext(**kwargs):
     if sortmode == TagSort.ALPHABETIC:
         pass #TODO: add sorting
     return " ".join(tagtextlist)
+
+def shortenLongInt(num:int):
+    suff = ["", "K","M","B","T"]
+    mag = 0
+    while abs(num) >= 1000:
+        mag += 1
+        num /= 1000.0
+    if mag > 4:
+        return "A-true-fuckton"
+    num = int(num)
+    return f"{num}{suff[mag]}"
+
 
 def checkTags(tags:str):
     """
@@ -350,7 +369,7 @@ def checkTags(tags:str):
         #Let's worry about him later ;-- drop table Code
         valid = True
         if not valid:
-            return "The tag '{0}' was rejected!".format(t)
+            return f"The tag '{t}' was rejected!"
     return False #No problems found
 
 #enum for TagSort
