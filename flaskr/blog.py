@@ -94,7 +94,7 @@ def create():
         taglist.remove("") #remove empty string tag
         error = None
 
-        tagErr = checkTags(tags)
+        tagErr = checkTags(taglist)
         if tagErr:
             error = tagErr
         if not title:
