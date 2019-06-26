@@ -180,19 +180,18 @@ def update(id):
                 (title, body, id)
             )
             db.commit()
-            update_tags(id, tags, newtags)
+            update_tags(id, tags, newtaglist)
             return redirect(url_for('blog.index'))
 
     return render_template('blog/update.html', post=post, tags = tags_str)
     
-def update_tags(postID:int, oldtags:list, newtags:str):
-    oldtaglist = set()
+def update_tags(postID:int, oldtags:list, newtagset:set):
+    oldtagset = set()
     for t in oldtags:
-        oldtaglist.add(t['tag_text'])
-    newtaglist = set(newtags.upper().split(" "))
+        oldtagset.add(t['tag_text'])
 
-    tags_to_add = newtaglist - oldtaglist
-    tags_to_del = oldtaglist - newtaglist
+    tags_to_add = newtagset - oldtagset
+    tags_to_del = oldtagset - newtagset
 
     db = get_db()
     for t in tags_to_add:
