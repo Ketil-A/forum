@@ -368,7 +368,7 @@ def checkTags(tags:str):
     if len(taglist) < __MIN_TAGS__:
         return f"Woah! We know almost nothing about this post. A post needs to have {__MIN_TAGS__} tags at least!"
     elif len(taglist) > __MAX_TAGS__:
-        return f"Woah! Hold your horses there. Don't you think {len(taglist)} tags are a bit extreme? Try to cut it down to just {__MIN_TAGS__} tags."
+        return f"Woah! Hold your horses there. Don't you think {len(taglist)} tags are a bit extreme? Try to cut it down to just {__MAX_TAGS__} tags."
     for t in taglist:
         if len(t) < __MIN_TAGLENGTH__:
             return f"Woah! Is '{t}' even a word? It seems a bit short. Try lengthen it to at least {__MIN_TAGLENGTH__} characters"

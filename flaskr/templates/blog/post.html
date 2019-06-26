@@ -25,7 +25,7 @@
         {% endif %}
       </header>
       <p class="body">{{ post['body'] }}</p>
-      <p class="about">Tags: {{tags}}</p>
+      <p class="about">Tags: {{ tags[post.id]|safe }}</p>
     </article>
     <div>
       <textarea class="commentTextArea" id="newCommentText"></textarea>
