@@ -11,6 +11,10 @@ bp = Blueprint('blog', __name__)
 #global flag for printing some debugging data
 # - Lars Erik 'KvaGram' Grambo
 __TEST__ = True
+__MAX_TAGS__ = 10 #posts with too many tags will be rejected.
+__MIN_TAGS__ = 0 #posts with too few tags will be rejected.
+__MAX_TAGLENGTH__ = 20 #a tag with too many characters in length will be rejected
+__MIN_TAGLENGTH__ = 2 #a tag with too few characters in length will be rejected
 
 @bp.route('/ascii')
 def ascii():
@@ -362,14 +366,21 @@ def checkTags(tags:str):
     This could be a bad length or some html exploit.
     Returns: a string explaining the problem or False
     """
-    #TODO: write some checks for tags
+    #TODO: write some technical checks for tags
     taglist = tags.upper.split(" ")
+    if len(taglist) < __MIN_TAGS__:
+        return f"Woah! We know almost nothing about this post. A post needs to have {__MIN_TAGS__} tags at least!"
+    elif len(taglist) > __MAX_TAGS__:
+        return f"Woah! Hold your horses there. Don't you think {len(taglist)} tags are a bit extreme? Try to cut it down to just {__MIN_TAGS__} tags."
     for t in taglist:
+        if len(t) < __MIN_TAGLENGTH__:
+            return f"Woah! Is '{t}' even a word? It seems a bit short. Try lengthen it to at least {__MIN_TAGLENGTH__} characters"
+        elif len(t) > __MAX_TAGLENGTH__:
+            return f"Excuse me! This field is not meant to write novels in. Try shortening that long tag there to just {__MAX_TAGLENGTH__} characters"
         #let's forget about Little Boddy Tables for now...
         #Let's worry about him later ;-- drop table Code
-        valid = True
-        if not valid:
-            return f"The tag '{t}' was rejected!"
+        if False:
+            return f"The tag '{t}' was rejected for some reason!"
     return False #No problems found
 
 #enum for TagSort
