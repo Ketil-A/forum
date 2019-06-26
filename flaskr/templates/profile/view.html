@@ -13,7 +13,7 @@
     </header>
     {% if g.user['id'] == user['id'] %}
     <div>
-      Email(only visible to you): {{ user['email']}}
+      Email(only visible to you): {{ user['email']}} <a class="right" href="{{ url_for('auth.change_email' )}}">Change Email</a>
     </div>
     {% endif %}
     <div>

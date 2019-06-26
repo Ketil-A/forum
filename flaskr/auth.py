@@ -118,3 +118,57 @@ def logout():
     """Clear the current session, including the stored user id."""
     session.clear()
     return redirect(url_for('index'))
+
+@bp.route('/password', methods=('GET', 'POST'))
+@login_required
+def change_password():
+    if request.method == 'POST':
+        oldpassword = request.form['oldpassword']
+        password = request.form['password']
+        confirmpassword = request.form['confirmpassword'] #TODO: Move to clientside
+        db = get_db()
+        error = None
+        user = db.execute(
+            'SELECT * FROM user WHERE id = ?', (g.user['id'],)
+        ).fetchone()
+
+        if not check_password_hash(user['password'], oldpassword):
+            error = 'Incorrect password.'
+        elif not password:
+            error = 'Password is required.'
+        elif password != confirmpassword:
+            error = 'Passwords do not match.'
+        if error is None:
+            db = get_db()
+            db.execute(
+                'UPDATE user SET password = ? WHERE id = ?',
+                (generate_password_hash(password), g.user['id'])
+            )
+            db.commit()
+            return redirect(url_for('index'))
+        flash(error)
+    return render_template('auth/password.html')
+
+@bp.route('/email', methods=('GET', 'POST'))
+@login_required
+def change_email():
+    if request.method == 'POST':
+        email = request.form['email']
+        db = get_db()
+        error = None
+
+        if email is None:
+            error = 'Email is required'
+        elif not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
+            error = 'Invalid email.'
+
+        if error is None:
+            db = get_db()
+            db.execute(
+                'UPDATE user SET email = ? WHERE id = ?',
+                (email, g.user['id'])
+            )
+            db.commit()
+            return redirect(url_for('index'))
+        flash(error)
+    return render_template('auth/email.html', )
