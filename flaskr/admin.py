@@ -15,4 +15,23 @@ def adminmainpage():
     tagcounts = {} # number of posts by tag
     tagcolors = {} # designated color of each tag (default to 'Not set')
     categories = {} # all categories (not yet implemented)
-    return render_template('blog/admin.html', tags = {}, tag_colors = {}, categories = {})
+    
+    db = get_db()
+
+    #TODO: implement categories
+    categories = [{"category_name" : "PLACEHOLDER 1"}, {"category_name" : "PLACEHOLDER 2"},{"category_name" : "PLACEHOLDER 3"},]
+
+    tags = db.execute(
+        ' SELECT DISTINCT tag_text'
+        ' FROM tags'
+    ).fetchall()
+    for tag in tags:
+        tag_text = tag['tag_text']
+        tagcounts[tag_text] = len(get_db().execute(
+                'SELECT * FROM tags'
+                ' WHERE tag_text = ?',
+                (tag_text,)
+            ).fetchall())
+        tagcolors[tag_text] = "NOT SET" #TODO: implement tag colors
+
+    return render_template('blog/admin.html', categories = categories, tags = tags, tagcounts = tagcounts, tagcolors = tagcolors)
