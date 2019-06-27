@@ -12,8 +12,7 @@
     <i>You are strongly encuraged not to fuck up in here.</i>
     {% for cat in categories %}
         <article class="categories">
-            {#<p>{{cat['category_name']}} - <a href="{{ url_for('admin.killcat', cat=cat['category_name']) }}">Delete</a></p>#}
-            <p>{{cat['category_name']}} - <a href=#>Delete</a></p>
+            <p>{{cat['category_name']}} - <a href="{{ url_for('admin.killcat', cat=cat['category_name']) }}">Delete</a></p>
         </article>
     {% endfor %}
     <p>PLACEHOLDER FOR ADDING CATEGORIES</p>
@@ -21,8 +20,7 @@
 
     {% for tag in tags %}
         <p><b>{{tag['tag_text']}}</b> - posts: {{tagcounts[tag['tag_text']]}} Color assigned: {{tagcolors[tag['tag_text']]}}</p>
-        {#<p><a href="{{ url_for('admin.killtag', tag=tag['tag_text']) }}">Delete tag</a> - <a href="{{ url_for('admin.colortag', tag=tag['tag_text']) }}">Assign Color</a></p>#}
-        <p><a href=#>Delete tag</a> - <a href=#>Assign Color</a></p>
+        <p><a href="{{ url_for('admin.killtag', tag=tag['tag_text']) }}">Delete tag</a> - <a href="{{ url_for('admin.colortag', tag=tag['tag_text']) }}">Assign Color</a></p>
 
     {% endfor %}
 {% endblock %}

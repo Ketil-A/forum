@@ -9,6 +9,17 @@ from flaskr.db import get_db
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
+@bp.route('/killcat/<cat>')
+def killcat(cat):
+    return(f"Wery well sir, killing the cat {cat}")
+@bp.route('/killtag/<tag>')
+def killtag(tag):
+    return(f"Wery well sir, eliminating the tag {tag}")
+@bp.route('/colortag/<tag>')
+def colortag(tag):
+    return(f"Crayons drawn and ready! How shall we color {tag}?")
+
+
 @bp.route('/')
 def adminmainpage():
     tags = {}       #all unique tags
