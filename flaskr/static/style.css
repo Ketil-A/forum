@@ -170,6 +170,10 @@ button *{
   width:100%
 }
 
-.right {
+asciiart {
+  font-family: monospace;
+  font-size: 4px;
+}
+ .right {
   float:right
 }

@@ -6,11 +6,17 @@ from werkzeug.exceptions import abort
 from flaskr.auth import login_required
 from flaskr.db import get_db
 
+import html
+
 bp = Blueprint('blog', __name__)
 
 #global flag for printing some debugging data
 # - Lars Erik 'KvaGram' Grambo
 __TEST__ = True
+__MAX_TAGS__ = 10 #posts with too many tags will be rejected.
+__MIN_TAGS__ = 0 #posts with too few tags will be rejected.
+__MAX_TAGLENGTH__ = 20 #a tag with too many characters in length will be rejected
+__MIN_TAGLENGTH__ = 2 #a tag with too few characters in length will be rejected
 
 @bp.route('/ascii')
 def ascii():
@@ -28,7 +34,7 @@ def index():
     tags = {}
     for p in posts:
         p_id = p['id']
-        tags[p_id] = get_tags(p_id)
+        tags[p_id] = getTagtext(postID = p_id, number = True, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = tags)
 
 
@@ -85,8 +91,13 @@ def create():
         #split uppercase and split tags into a set.
         #this ensures same case and no duplicates
         taglist:set = set(tags.upper().split(" "))
+        if "" in taglist:
+            taglist.remove("") #remove empty string tag
         error = None
 
+        tagErr = checkTags(taglist)
+        if tagErr:
+            error = tagErr
         if not title:
             error = 'Title is required.'
 
@@ -130,7 +141,7 @@ def bytag(tag):
     for h in taghits:
         postID = h['post_id']
         posts.append(get_post(postID, False))
-        posttags[postID] = (get_tags(postID))
+        posttags[postID] = getTagtext(postID = postID, number = True, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/index.html', posts=posts, tags = posttags)
 
 @bp.route('/<int:id>/update', methods=('GET', 'POST'))
@@ -147,7 +158,15 @@ def update(id):
         title = request.form['title']
         body = request.form['body']
         newtags = request.form['tags']
+
+        newtaglist:set = set(newtags.upper().split(" "))
+        if "" in newtaglist:
+            newtaglist.remove("") #remove empty string tag
         error = None
+
+        tagErr = checkTags(newtaglist)
+        if tagErr:
+            error = tagErr
 
         if not title:
             error = 'Title is required.'
@@ -161,19 +180,18 @@ def update(id):
                 (title, body, id)
             )
             db.commit()
-            update_tags(id, tags, newtags)
+            update_tags(id, tags, newtaglist)
             return redirect(url_for('blog.index'))
 
     return render_template('blog/update.html', post=post, tags = tags_str)
     
-def update_tags(postID:int, oldtags:list, newtags:str):
-    oldtaglist = set()
+def update_tags(postID:int, oldtags:list, newtagset:set):
+    oldtagset = set()
     for t in oldtags:
-        oldtaglist.add(t['tag_text'])
-    newtaglist = set(newtags.upper().split(" "))
+        oldtagset.add(t['tag_text'])
 
-    tags_to_add = newtaglist - oldtaglist
-    tags_to_del = oldtaglist - newtaglist
+    tags_to_add = newtagset - oldtagset
+    tags_to_del = oldtagset - newtagset
 
     db = get_db()
     for t in tags_to_add:
@@ -220,7 +238,7 @@ def view_post(id):
         ' ORDER BY created DESC',
         (id,)
     ).fetchall()
-    tags = get_tags(id)
+    tags = getTagtext(postID = id, number = True, links = True, tagCase = TagCase.CAPITAL)
     return render_template('blog/post.html', post=post, tags = tags, comments=comments)
 
 ##By ketil
@@ -280,3 +298,107 @@ def delete_comment(id):
     db.execute('DELETE FROM comment WHERE id = ?', (id,))
     db.commit()
     return "Deleted Comment"
+
+def getTagtext(**kwargs):
+    """
+    postID or tagResults required.
+    If postID is given, gets tagResults from get_tags()
+    :param postID: id of post to get comment string
+    :param tagResults : tags to convert to string.
+    :param tagCase : The displayed typecase of the tags
+    :param number: add number of post with tag
+    :param colorize: add color-data to tags
+    :param links : add links for bytag page
+    :param sort: sorting-mode, see TagSort enum
+    :return: a string containing the tags.
+    """
+    postID      = kwargs.get("postID", None)
+    tagResults  = kwargs.get("tagResults", None)
+    tagCase     = kwargs.get("tagCase", TagCase.UPPER)
+    addNums     = kwargs.get("number", False)
+    addColors   = kwargs.get("colorize", False)
+    addLinks    = kwargs.get("links", False)
+    sortmode    = kwargs.get("sort", TagSort.NONE)
+
+    if not tagResults:
+        tagResults = get_tags(postID)
+    if not tagResults or len(tagResults) < 1:
+        return ""
+
+    tagtextlist = []
+    for t in tagResults:
+        tt = t['tag_text']
+        text = tt
+        if tagCase == TagCase.LOWER:
+            text = text.lower()
+        elif tagCase == TagCase.CAPITAL:
+            text = text.capitalize()
+        if addNums:
+            length = len(get_db().execute(
+                'SELECT post_id'
+                ' FROM tags'
+                ' WHERE tag_text = ?',
+                (tt,)
+            ).fetchall()) #NOTE: There must be a better way to do this.
+            lentext = shortenLongInt(length)
+            text = f"{text} ({lentext})"
+        if addColors:
+            pass #TODO add applicable colors to tags (may require some lookup table or database)
+        if addLinks:
+            url = url_for('blog.bytag', tag = tt)
+            text = "<a href ='" + url + "'>" + html.escape(text) + "</a>"
+        else: 
+            text = html.escape(text)
+        tagtextlist.append(text)
+    if sortmode == TagSort.ALPHABETIC:
+        pass #TODO: add sorting
+    return " ".join(tagtextlist)
+
+def shortenLongInt(num:int):
+    suff = ["", "K","M","B","T"]
+    mag = 0
+    while abs(num) >= 1000:
+        mag += 1
+        num /= 1000.0
+    if mag > 4:
+        return "A-true-fuckton"
+    num = int(num)
+    return f"{num}{suff[mag]}"
+
+
+def checkTags(tags):
+    """
+    Checktags checks if there are any issues with one of the tags.
+    This could be a bad length or some html exploit.
+    Returns: a string explaining the problem or False
+    """
+    #TODO: write some technical checks for tags
+    if type(tags) in (list,tuple,set):
+        taglist = list(tags)
+    elif type(tags) in (str,):
+        taglist = tags.upper().split(" ")
+    if len(taglist) < __MIN_TAGS__:
+        return f"Woah! We know almost nothing about this post. A post needs to have {__MIN_TAGS__} tags at least!"
+    elif len(taglist) > __MAX_TAGS__:
+        return f"Woah! Hold your horses there. Don't you think {len(taglist)} tags are a bit extreme? Try to cut it down to just {__MAX_TAGS__} tags."
+    for t in taglist:
+        if len(t) < __MIN_TAGLENGTH__:
+            return f"Woah! Is '{t}' even a word? It seems a bit short. Try lengthen it to at least {__MIN_TAGLENGTH__} characters"
+        elif len(t) > __MAX_TAGLENGTH__:
+            return f"Excuse me! This field is not meant to write novels in. Try shortening that long tag there to just {__MAX_TAGLENGTH__} characters"
+        elif not t.isalnum():
+            return "Tags can only have alphanumeric characters"
+        #let's forget about Little Boddy Tables for now...
+        #Let's worry about him later ;-- drop table Code
+        if False:
+            return f"The tag '{t}' was rejected for some reason!"
+    return False #No problems found
+
+#enum for TagSort
+class TagSort:
+    NONE = 0 # keep tags as is from database
+    ALPHABETIC = 1 # sort tags alphabetically - (current sql query in get_tags?)
+class TagCase:
+    UPPER = 0
+    LOWER = 1
+    CAPITAL = 2
