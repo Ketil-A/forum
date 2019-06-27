@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Change Email{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <input type="email" name="email" id="email" placeholder="New Email" required>
+    <input type="submit" value="Sumit">
+  </form>
+{% endblock %}
