@@ -19,10 +19,10 @@
     <p>PLACEHOLDER FOR ADDING CATEGORIES</p>
     <br/>
 
-    {for tag in tags %}
-    <p><b>{{tag['tag_text']}}</b> - posts: {{tagcounts[tag['tag_text']]}} Color assigned: {{tagcolors[tag['tag_text']]}}</p>
-    <!--<p><a href="{{ url_for('admin.killtag', tag=tag['tag_text']) }}">Delete tag</a> - <a href="{{ url_for('admin.colortag', tag=tag['tag_text']) }}">Assign Color</a></p>-->
-    <p><a href=#>Delete tag</a> - <a href=#>Assign Color</a></p>
+    {% for tag in tags %}
+        <p><b>{{tag['tag_text']}}</b> - posts: {{tagcounts[tag['tag_text']]}} Color assigned: {{tagcolors[tag['tag_text']]}}</p>
+        <!--<p><a href="{{ url_for('admin.killtag', tag=tag['tag_text']) }}">Delete tag</a> - <a href="{{ url_for('admin.colortag', tag=tag['tag_text']) }}">Assign Color</a></p>-->
+        <p><a href=#>Delete tag</a> - <a href=#>Assign Color</a></p>
 
     {% endfor %}
 {% endblock %}
