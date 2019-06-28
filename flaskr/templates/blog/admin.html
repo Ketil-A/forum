@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block head %}
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script type=text/javascript>
+    $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+  </script>
+{% endblock %}
+
+{% block content %}
+    <h1>Welcome to the admin page.</h1>
+    <i>You are strongly encuraged not to fuck up in here.</i>
+    {% for cat in categories %}
+        <article class="categories">
+            <p>{{cat['category_name']}} - <a href="{{ url_for('admin.killcat', cat=cat['category_name']) }}">Delete</a></p>
+        </article>
+    {% endfor %}
+    <form method="post", action="./makecat">
+      <label for="catname">Category name</label>
+      <input name="catname" id="catname" value="{{ request.form['catname'] }}" required>
+      <input type="submit" value="Post">
+    </form>
+    <p>PLACEHOLDER FOR ADDING CATEGORIES</p>
+    <br/>
+
+    {% for tag in tags %}
+        <p><b>{{tag['tag_text']}}</b> - posts: {{tagcounts[tag['tag_text']]}} Color assigned: {{tagcolors[tag['tag_text']]}}</p>
+        <p><a href="{{ url_for('admin.killtag', tag=tag['tag_text']) }}">Delete tag</a> - <a href="{{ url_for('admin.colortag', tag=tag['tag_text']) }}">Assign Color</a></p>
+
+    {% endfor %}
+{% endblock %}
