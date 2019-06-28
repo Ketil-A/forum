@@ -9,6 +9,7 @@
       <li><a class="profileLink" href="{{ url_for('profile.viewProfile', username=g.user['username']) }}">{{ g.user['username'] }}</a>
       <li><a href="{{ url_for('auth.change_password' )}}">Change Password</a>
       <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+      <li><a href="{{ url_for('admin.adminmainpage') }}">Administer site</a>
     {% else %}
       <li><a href="{{ url_for('auth.register') }}">Register</a>
       <li><a href="{{ url_for('auth.login') }}">Log In</a>
