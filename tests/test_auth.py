@@ -64,3 +64,47 @@ def test_logout(client, auth):
     with client:
         auth.logout()
         assert 'user_id' not in session
+
+def test_password_change(client, auth):
+    auth.login()
+    response = client.post(
+        '/auth/password',
+        data={'oldpassword': 'test', 'password': 'test2', 'confirmpassword': 'test2'}
+    )
+    #Test if redirected to index after password change.
+    assert 'http://localhost/' == response.headers['Location']
+
+@pytest.mark.parametrize(('oldpassword', 'newpassword', 'confirmpassword', 'message'), (
+    ('wrongpass', 'test2','test2', b'Incorrect password.'),
+    ('test', '','', b'Password is required.'),
+    ('test', 'match','mismatch', b'Passwords do not match.'),
+))
+def test_change_password_validation(client, auth, oldpassword, newpassword, confirmpassword, message):
+    auth.login()
+    response = client.post(
+        '/auth/password',
+        data={'oldpassword': oldpassword, 'password': newpassword, 'confirmpassword': confirmpassword}
+    )
+    assert message in response.data
+
+
+def test_change_email(client, auth):
+    auth.login()
+    response = client.post(
+        '/auth/email',
+        data={'email': 'testchange@test.no'}
+    )
+    #Test if redirected to index after email change.
+    assert 'http://localhost/' == response.headers['Location']
+
+@pytest.mark.parametrize(('email', 'message'), (
+    ('', b'Email is required'),
+    ('test', b'Invalid email.'),
+))
+def test_change_email_validation(client, auth, email, message):
+    auth.login()
+    response = client.post(
+        '/auth/email',
+        data={'email': email}
+    )
+    assert message in response.data

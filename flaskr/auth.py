@@ -145,6 +145,7 @@ def change_password():
                 (generate_password_hash(password), g.user['id'])
             )
             db.commit()
+            flash('Password changed successfully.')
             return redirect(url_for('index'))
         flash(error)
     return render_template('auth/password.html')
@@ -157,7 +158,7 @@ def change_email():
         db = get_db()
         error = None
 
-        if email is None:
+        if not email:
             error = 'Email is required'
         elif not re.fullmatch(r"[^@]+@[^@]+\.[^@]+", email):
             error = 'Invalid email.'
@@ -169,6 +170,7 @@ def change_email():
                 (email, g.user['id'])
             )
             db.commit()
+            flash('Email changed successfully')
             return redirect(url_for('index'))
         flash(error)
     return render_template('auth/email.html', )
