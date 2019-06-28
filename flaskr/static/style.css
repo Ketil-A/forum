@@ -65,6 +65,10 @@ nav ul li a, nav ul li span, header .action {
   padding: 0 1rem 1rem;
 }
 
+.content .action {
+  color: #77b;
+}
+
 .content > header {
   border-bottom: 1px solid lightgray;
   display: flex;
@@ -100,7 +104,18 @@ nav ul li a, nav ul li span, header .action {
 
 .post .about {
   color: slategray;
-  font-style: italic;
+}
+
+.post .about a {
+  color: #77b;
+}
+
+.post p a {
+  color: #77b;
+  background-color: #eee;
+  padding-left: 7px;
+  padding-right: 7px;
+  border-radius: 10px;
 }
 
 .post .body {
