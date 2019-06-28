@@ -9,7 +9,7 @@ VALUES
 
 INSERT INTO profile (user_id, firstname, lastname, bio)
 VALUES
-  ('0', 'testfirst', 'testlast', 'some text');
+  ('1', 'testfirst', 'testlast', 'some text');
 
 INSERT INTO comment (post_id, body, author_id, created)
 VALUES

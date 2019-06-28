@@ -31,7 +31,7 @@ def get_user(username):
         abort(404, "User '{0}' doesn't exist.".format(username))
     return user
 
-@bp.route('/<username>/')
+@bp.route('/<username>')
 def viewProfile(username):
     user = get_user(username)
     profile = get_profile(user['id'])
@@ -43,7 +43,6 @@ def editProfile(username):
     if username != g.user['username']:
         abort(403)
     if request.method == 'POST':
-        #TODO handle user profile form, then refresh.
         firstname = request.form['firstname']
         lastname = request.form['lastname']
         bio = request.form['bio']

@@ -129,3 +129,6 @@ def test_comment_delete(client, auth, app):
         db = get_db()
         post = db.execute('SELECT * FROM comment WHERE id = 1').fetchone()
         assert post is None
+
+
+##TODO: Add tag tests
