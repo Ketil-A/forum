@@ -15,6 +15,11 @@
             <p>{{cat['category_name']}} - <a href="{{ url_for('admin.killcat', cat=cat['category_name']) }}">Delete</a></p>
         </article>
     {% endfor %}
+    <form method="post", action="./makecat">
+      <label for="catname">Category name</label>
+      <input name="catname" id="catname" value="{{ request.form['catname'] }}" required>
+      <input type="submit" value="Post">
+    </form>
     <p>PLACEHOLDER FOR ADDING CATEGORIES</p>
     <br/>
 
